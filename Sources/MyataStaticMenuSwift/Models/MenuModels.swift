@@ -21,6 +21,51 @@ struct SourceConfiguration: Codable, Equatable {
 
         return URL(string: "https://docs.google.com/spreadsheets/d/\(googleSheetID)/export?format=csv&gid=\(gid)")
     }
+
+    enum CodingKeys: String, CodingKey {
+        case googleSheetID
+        case settingsGID
+        case categoriesGID
+        case itemsGID
+        case s3Endpoint
+        case s3Region
+        case bucket
+        case prefix
+        case publicMenuURL
+        case yandexVendor
+    }
+
+    init() {}
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        googleSheetID = try container.decodeIfPresent(String.self, forKey: .googleSheetID) ?? "1s4R3MAhKlQLbCyy-AFl9QISEviAcgik5fxkwPpD_lUc"
+        settingsGID = try container.decodeIfPresent(String.self, forKey: .settingsGID) ?? "1486340064"
+        categoriesGID = try container.decodeIfPresent(String.self, forKey: .categoriesGID) ?? "0"
+        itemsGID = try container.decodeIfPresent(String.self, forKey: .itemsGID) ?? "823879448"
+        s3Endpoint = try container.decodeIfPresent(String.self, forKey: .s3Endpoint) ?? "https://storage.yandexcloud.net"
+        s3Region = try container.decodeIfPresent(String.self, forKey: .s3Region) ?? "ru-central1"
+        bucket = try container.decodeIfPresent(String.self, forKey: .bucket) ?? "hookah-menu-feed"
+        prefix = try container.decodeIfPresent(String.self, forKey: .prefix) ?? "menu"
+        publicMenuURL = try container.decodeIfPresent(String.self, forKey: .publicMenuURL) ?? "https://storage.yandexcloud.net/hookah-menu-feed/menu/index.html"
+        yandexVendor = try container.decodeIfPresent(String.self, forKey: .yandexVendor) ?? "Мята Ленинский"
+        accessKeyID = ""
+        secretAccessKey = ""
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(googleSheetID, forKey: .googleSheetID)
+        try container.encode(settingsGID, forKey: .settingsGID)
+        try container.encode(categoriesGID, forKey: .categoriesGID)
+        try container.encode(itemsGID, forKey: .itemsGID)
+        try container.encode(s3Endpoint, forKey: .s3Endpoint)
+        try container.encode(s3Region, forKey: .s3Region)
+        try container.encode(bucket, forKey: .bucket)
+        try container.encode(prefix, forKey: .prefix)
+        try container.encode(publicMenuURL, forKey: .publicMenuURL)
+        try container.encode(yandexVendor, forKey: .yandexVendor)
+    }
 }
 
 struct MenuSettings: Codable {

@@ -23,7 +23,7 @@ final class ControlPanelViewModel: ObservableObject {
     func loadConfiguration() async {
         do {
             configuration = try await settingsStore.load()
-            appendLog("Loaded source configuration.\n")
+            appendLog("Loaded source configuration and resolved S3 secrets from Keychain.\n")
         } catch {
             appendLog("Failed to load configuration: \(error.localizedDescription)\n")
         }
@@ -32,7 +32,7 @@ final class ControlPanelViewModel: ObservableObject {
     func saveConfiguration() async {
         do {
             try await settingsStore.persist(configuration)
-            appendLog("Saved source configuration.\n")
+            appendLog("Saved source configuration and stored S3 secrets in Keychain.\n")
         } catch {
             appendLog("Failed to save configuration: \(error.localizedDescription)\n")
         }

@@ -120,7 +120,7 @@ struct ControlPanelView: View {
                 Task { await viewModel.saveConfiguration() }
             }
             .buttonStyle(.bordered)
-            Text("Сейчас секреты хранятся локально в Application Support. Следующим шагом перенесём их в Keychain.")
+            Text("S3 секреты сохраняются в macOS Keychain. В локальном конфиге остаются только несекретные настройки.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
