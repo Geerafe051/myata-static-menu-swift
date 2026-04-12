@@ -4,22 +4,39 @@ struct ControlPanelView: View {
     @ObservedObject var viewModel: ControlPanelViewModel
 
     var body: some View {
-        VStack(spacing: 16) {
-            header
-            HStack(alignment: .top, spacing: 16) {
-                actionsPanel
-                sourcePanel
+        GeometryReader { geometry in
+            ScrollView {
+                VStack(spacing: 16) {
+                    header
+
+                    if geometry.size.width >= 1120 {
+                        HStack(alignment: .top, spacing: 16) {
+                            actionsPanel
+                                .frame(width: 360)
+                            sourcePanel
+                        }
+                    } else {
+                        VStack(spacing: 16) {
+                            actionsPanel
+                            sourcePanel
+                        }
+                    }
+
+                    filesPanel
+                    logsPanel
+                }
+                .padding(20)
+                .frame(maxWidth: .infinity, alignment: .topLeading)
             }
-            filesPanel
-            logsPanel
+            .background(backgroundGradient)
         }
-        .padding(20)
-        .background(
-            LinearGradient(
-                colors: [Color(red: 0.05, green: 0.06, blue: 0.08), Color(red: 0.08, green: 0.10, blue: 0.13)],
-                startPoint: .top,
-                endPoint: .bottom
-            )
+    }
+
+    private var backgroundGradient: some View {
+        LinearGradient(
+            colors: [Color(red: 0.05, green: 0.06, blue: 0.08), Color(red: 0.08, green: 0.10, blue: 0.13)],
+            startPoint: .top,
+            endPoint: .bottom
         )
     }
 
@@ -27,7 +44,7 @@ struct ControlPanelView: View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Myata Static Menu Swift")
                 .font(.system(size: 34, weight: .bold))
-            Text("Нативное macOS приложение для сборки меню из Google Sheets. Текущий этап: локальная Swift-сборка HTML, JSON и Yandex YML.")
+            Text("Нативное macOS приложение для сборки и публикации меню из Google Sheets. Логика build, publish, refresh и migrate images уже выполняется на Swift.")
                 .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -43,32 +60,34 @@ struct ControlPanelView: View {
             Button {
                 Task { await viewModel.refreshMenu() }
             } label: {
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: 6) {
                     Text("Refresh Menu")
                         .font(.title2.weight(.bold))
-                    Text("Скачать данные из Google Sheets и локально собрать index.html, menu.json и yandex-menu.yml")
-                        .font(.caption)
+                    Text("Скачать актуальные данные из Google Sheets, собрать HTML/JSON/YML и сразу опубликовать всё в Yandex Object Storage.")
+                        .font(.callout)
                         .multilineTextAlignment(.leading)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(16)
+                .padding(18)
             }
             .buttonStyle(.borderedProminent)
             .controlSize(.large)
             .disabled(viewModel.isBusy)
-            .help("Скачать актуальные данные из Google Sheets, собрать артефакты и сразу опубликовать их в Yandex Object Storage.")
+            .help("Полный цикл: build + publish.")
 
-            HStack(spacing: 10) {
+            VStack(spacing: 10) {
                 smallActionButton(title: "Build", description: "Только локально собрать index.html, menu.json и yandex-menu.yml без публикации.") {
                     Task { await viewModel.buildMenu() }
                 }
-                smallActionButton(title: "Publish", description: "Загрузить уже собранные файлы из dist в Yandex Object Storage.") {
+                smallActionButton(title: "Publish", description: "Если локальных артефактов ещё нет, приложение сначала выполнит Build, а затем загрузит файлы в S3.") {
                     Task { await viewModel.publishMenu() }
                 }
                 smallActionButton(title: "Migrate Images", description: "Скачать все image_url из таблицы и перенести изображения в bucket в каталог img.") {
                     Task { await viewModel.migrateImages() }
                 }
             }
+
+            Divider()
 
             VStack(alignment: .leading, spacing: 6) {
                 Text(viewModel.lastBuildSummary)
@@ -92,34 +111,42 @@ struct ControlPanelView: View {
 
     private var sourcePanel: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Источник Данных")
+            Text("Источник Данных И S3")
                 .font(.title3.weight(.semibold))
 
             labeledField("Google Sheet ID", text: $viewModel.configuration.googleSheetID)
-            HStack(spacing: 10) {
+
+            adaptiveFields {
                 labeledField("Settings GID", text: $viewModel.configuration.settingsGID)
                 labeledField("Categories GID", text: $viewModel.configuration.categoriesGID)
             }
+
             labeledField("Items GID", text: $viewModel.configuration.itemsGID)
-            HStack(spacing: 10) {
+
+            adaptiveFields {
                 labeledField("S3 Endpoint", text: $viewModel.configuration.s3Endpoint)
                 labeledField("S3 Region", text: $viewModel.configuration.s3Region)
             }
+
             labeledField("Bucket", text: $viewModel.configuration.bucket)
-            HStack(spacing: 10) {
+
+            adaptiveFields {
                 labeledField("Prefix", text: $viewModel.configuration.prefix)
                 labeledField("Yandex Vendor", text: $viewModel.configuration.yandexVendor)
             }
-            HStack(spacing: 10) {
+
+            adaptiveFields {
                 labeledField("Access Key ID", text: $viewModel.configuration.accessKeyID)
-                labeledField("Secret Access Key", text: $viewModel.configuration.secretAccessKey)
+                secretField("Secret Access Key", text: $viewModel.configuration.secretAccessKey)
             }
+
             labeledField("Public Menu URL", text: $viewModel.configuration.publicMenuURL)
 
             Button("Сохранить настройки") {
                 Task { await viewModel.saveConfiguration() }
             }
             .buttonStyle(.bordered)
+
             Text("S3 секреты сохраняются в macOS Keychain. В локальном конфиге остаются только несекретные настройки.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
@@ -172,7 +199,7 @@ struct ControlPanelView: View {
                     .font(.system(.body, design: .monospaced))
             }
             .padding(12)
-            .frame(maxWidth: .infinity, minHeight: 220, alignment: .topLeading)
+            .frame(maxWidth: .infinity, minHeight: 240, alignment: .topLeading)
             .background(Color.black.opacity(0.25), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -182,12 +209,15 @@ struct ControlPanelView: View {
 
     private func smallActionButton(title: String, description: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(title)
-                    .font(.headline)
-                Text(description)
-                    .font(.caption)
-                    .multilineTextAlignment(.leading)
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(title)
+                        .font(.headline)
+                    Text(description)
+                        .font(.caption)
+                        .multilineTextAlignment(.leading)
+                }
+                Spacer(minLength: 0)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(12)
@@ -195,6 +225,17 @@ struct ControlPanelView: View {
         .buttonStyle(.bordered)
         .disabled(viewModel.isBusy)
         .help(description)
+    }
+
+    private func adaptiveFields<Content: View>(@ViewBuilder content: () -> Content) -> some View {
+        ViewThatFits(in: .horizontal) {
+            HStack(alignment: .top, spacing: 10) {
+                content()
+            }
+            VStack(spacing: 10) {
+                content()
+            }
+        }
     }
 
     private func labeledField(_ title: String, text: Binding<String>) -> some View {
@@ -205,6 +246,18 @@ struct ControlPanelView: View {
             TextField(title, text: text)
                 .textFieldStyle(.roundedBorder)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func secretField(_ title: String, text: Binding<String>) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(title)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            SecureField(title, text: text)
+                .textFieldStyle(.roundedBorder)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 

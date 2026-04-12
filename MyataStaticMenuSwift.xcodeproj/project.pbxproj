@@ -1,0 +1,330 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		B00000000000000000000001 /* MyataStaticMenuApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000009 /* MyataStaticMenuApp.swift */; };
+		B00000000000000000000002 /* MenuModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0000000000000000000000A /* MenuModels.swift */; };
+		B00000000000000000000003 /* AppPaths.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0000000000000000000000B /* AppPaths.swift */; };
+		B00000000000000000000004 /* CSVParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0000000000000000000000C /* CSVParser.swift */; };
+		B00000000000000000000005 /* GoogleSheetsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0000000000000000000000D /* GoogleSheetsService.swift */; };
+		B00000000000000000000006 /* HTMLRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0000000000000000000000E /* HTMLRenderer.swift */; };
+		B00000000000000000000007 /* ImageMigrationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0000000000000000000000F /* ImageMigrationService.swift */; };
+		B00000000000000000000008 /* JSONCoding.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000010 /* JSONCoding.swift */; };
+		B00000000000000000000009 /* KeychainStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000011 /* KeychainStore.swift */; };
+		B0000000000000000000000A /* MenuBuildService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000012 /* MenuBuildService.swift */; };
+		B0000000000000000000000B /* PublishService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000013 /* PublishService.swift */; };
+		B0000000000000000000000C /* S3Client.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000014 /* S3Client.swift */; };
+		B0000000000000000000000D /* SettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000015 /* SettingsStore.swift */; };
+		B0000000000000000000000E /* YandexYMLRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000016 /* YandexYMLRenderer.swift */; };
+		B0000000000000000000000F /* ControlPanelViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000017 /* ControlPanelViewModel.swift */; };
+		B00000000000000000000010 /* ControlPanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000018 /* ControlPanelView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		A00000000000000000000009 /* MyataStaticMenuApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyataStaticMenuApp.swift; sourceTree = "<group>"; };
+		A0000000000000000000000A /* MenuModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuModels.swift; sourceTree = "<group>"; };
+		A0000000000000000000000B /* AppPaths.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppPaths.swift; sourceTree = "<group>"; };
+		A0000000000000000000000C /* CSVParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CSVParser.swift; sourceTree = "<group>"; };
+		A0000000000000000000000D /* GoogleSheetsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoogleSheetsService.swift; sourceTree = "<group>"; };
+		A0000000000000000000000E /* HTMLRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTMLRenderer.swift; sourceTree = "<group>"; };
+		A0000000000000000000000F /* ImageMigrationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageMigrationService.swift; sourceTree = "<group>"; };
+		A00000000000000000000010 /* JSONCoding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONCoding.swift; sourceTree = "<group>"; };
+		A00000000000000000000011 /* KeychainStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainStore.swift; sourceTree = "<group>"; };
+		A00000000000000000000012 /* MenuBuildService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBuildService.swift; sourceTree = "<group>"; };
+		A00000000000000000000013 /* PublishService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PublishService.swift; sourceTree = "<group>"; };
+		A00000000000000000000014 /* S3Client.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = S3Client.swift; sourceTree = "<group>"; };
+		A00000000000000000000015 /* SettingsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsStore.swift; sourceTree = "<group>"; };
+		A00000000000000000000016 /* YandexYMLRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YandexYMLRenderer.swift; sourceTree = "<group>"; };
+		A00000000000000000000017 /* ControlPanelViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControlPanelViewModel.swift; sourceTree = "<group>"; };
+		A00000000000000000000018 /* ControlPanelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControlPanelView.swift; sourceTree = "<group>"; };
+		A00000000000000000000019 /* MyataStaticMenuSwift.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MyataStaticMenuSwift.app; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		C00000000000000000000004 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		A00000000000000000000002 = {
+			isa = PBXGroup;
+			children = (
+				A00000000000000000000004 /* Sources */,
+				A00000000000000000000003 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		A00000000000000000000003 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				A00000000000000000000019 /* MyataStaticMenuSwift.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		A00000000000000000000004 /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				A00000000000000000000009 /* MyataStaticMenuApp.swift */,
+				A00000000000000000000005 /* Models */,
+				A00000000000000000000006 /* Services */,
+				A00000000000000000000007 /* ViewModels */,
+				A00000000000000000000008 /* Views */,
+			);
+			path = Sources/MyataStaticMenuSwift;
+			sourceTree = SOURCE_ROOT;
+		};
+		A00000000000000000000005 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				A0000000000000000000000A /* MenuModels.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		A00000000000000000000006 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				A0000000000000000000000B /* AppPaths.swift */,
+				A0000000000000000000000C /* CSVParser.swift */,
+				A0000000000000000000000D /* GoogleSheetsService.swift */,
+				A0000000000000000000000E /* HTMLRenderer.swift */,
+				A0000000000000000000000F /* ImageMigrationService.swift */,
+				A00000000000000000000010 /* JSONCoding.swift */,
+				A00000000000000000000011 /* KeychainStore.swift */,
+				A00000000000000000000012 /* MenuBuildService.swift */,
+				A00000000000000000000013 /* PublishService.swift */,
+				A00000000000000000000014 /* S3Client.swift */,
+				A00000000000000000000015 /* SettingsStore.swift */,
+				A00000000000000000000016 /* YandexYMLRenderer.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		A00000000000000000000007 /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				A00000000000000000000017 /* ControlPanelViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		A00000000000000000000008 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				A00000000000000000000018 /* ControlPanelView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		C00000000000000000000001 /* MyataStaticMenuSwift */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D00000000000000000000002 /* Build configuration list for PBXNativeTarget "MyataStaticMenuSwift" */;
+			buildPhases = (
+				C00000000000000000000003 /* Sources */,
+				C00000000000000000000004 /* Frameworks */,
+				C00000000000000000000005 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = MyataStaticMenuSwift;
+			productName = MyataStaticMenuSwift;
+			productReference = A00000000000000000000019 /* MyataStaticMenuSwift.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		A00000000000000000000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2600;
+				LastUpgradeCheck = 2600;
+				TargetAttributes = {
+					C00000000000000000000001 = {
+						CreatedOnToolsVersion = 26.4;
+					};
+				};
+			};
+			buildConfigurationList = D00000000000000000000001 /* Build configuration list for PBXProject "MyataStaticMenuSwift" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = A00000000000000000000002;
+			productRefGroup = A00000000000000000000003 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				C00000000000000000000001 /* MyataStaticMenuSwift */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		C00000000000000000000005 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		C00000000000000000000003 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B00000000000000000000001 /* MyataStaticMenuApp.swift in Sources */,
+				B00000000000000000000002 /* MenuModels.swift in Sources */,
+				B00000000000000000000003 /* AppPaths.swift in Sources */,
+				B00000000000000000000004 /* CSVParser.swift in Sources */,
+				B00000000000000000000005 /* GoogleSheetsService.swift in Sources */,
+				B00000000000000000000006 /* HTMLRenderer.swift in Sources */,
+				B00000000000000000000007 /* ImageMigrationService.swift in Sources */,
+				B00000000000000000000008 /* JSONCoding.swift in Sources */,
+				B00000000000000000000009 /* KeychainStore.swift in Sources */,
+				B0000000000000000000000A /* MenuBuildService.swift in Sources */,
+				B0000000000000000000000B /* PublishService.swift in Sources */,
+				B0000000000000000000000C /* S3Client.swift in Sources */,
+				B0000000000000000000000D /* SettingsStore.swift in Sources */,
+				B0000000000000000000000E /* YandexYMLRenderer.swift in Sources */,
+				B0000000000000000000000F /* ControlPanelViewModel.swift in Sources */,
+				B00000000000000000000010 /* ControlPanelView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		D00000000000000000000003 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGNING_REQUIRED = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		D00000000000000000000004 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGNING_REQUIRED = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+			};
+			name = Release;
+		};
+		D00000000000000000000005 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGNING_REQUIRED = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_LANGUAGE = en;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "Myata Static Menu Swift";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.business";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.geerafe051.myata-static-menu-swift;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		D00000000000000000000006 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGNING_REQUIRED = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_LANGUAGE = en;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "Myata Static Menu Swift";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.business";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.geerafe051.myata-static-menu-swift;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		D00000000000000000000001 /* Build configuration list for PBXProject "MyataStaticMenuSwift" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D00000000000000000000003 /* Debug */,
+				D00000000000000000000004 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D00000000000000000000002 /* Build configuration list for PBXNativeTarget "MyataStaticMenuSwift" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D00000000000000000000005 /* Debug */,
+				D00000000000000000000006 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = A00000000000000000000001 /* Project object */;
+}

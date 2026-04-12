@@ -6,7 +6,7 @@ enum YandexYMLRenderer {
             .map { "            <category id=\"\(escape($0.id))\">\(escape($0.name))</category>" }
             .joined(separator: "\n")
 
-        let offers = menuData.items.map { item in
+        let offers = menuData.items.filter(\.availableOnMap).map { item in
             let picture = item.imageURL.isEmpty ? "" : "\n                <picture>\(escape(item.imageURL))</picture>"
             let description = item.description.isEmpty ? "" : "\n                <description>\(escape(item.description))</description>"
 

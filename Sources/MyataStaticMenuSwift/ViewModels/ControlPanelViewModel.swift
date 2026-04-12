@@ -50,6 +50,13 @@ final class ControlPanelViewModel: ObservableObject {
 
     func publishMenu() async {
         await runOperation(.publish) { [self] in
+            if self.artifacts.isEmpty {
+                self.appendLog("No local artifacts found. Running build before publish...\n")
+                let buildResult = try await self.buildService.build(using: self.configuration)
+                self.artifacts = buildResult.artifacts
+                self.lastBuildSummary = "Собрано \(buildResult.menuData.sections.count) категорий и \(buildResult.menuData.items.count) позиций."
+            }
+
             let uploaded = try await self.publishService.publishArtifacts(configuration: self.configuration)
             self.artifacts = uploaded
             let detail = "Опубликовано \(uploaded.count) файлов в bucket."

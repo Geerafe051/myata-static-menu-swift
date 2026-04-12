@@ -96,6 +96,7 @@ struct GoogleSheetsService {
                 description: row["description"] ?? "",
                 imageURL: row["image_url"] ?? "",
                 available: parseBool(row["available"], defaultValue: true),
+                availableOnMap: parseBool(row["available_on_map"], defaultValue: false),
                 sortOrder: Int(row["sort_order"] ?? "") ?? 0
             )
         }

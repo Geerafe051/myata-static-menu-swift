@@ -18,7 +18,8 @@
 Сейчас приложение уже умеет:
 
 - хранить настройки источника данных
-- хранить S3-конфигурацию локально
+- хранить несекретную S3-конфигурацию локально
+- сохранять `Access Key ID` и `Secret Access Key` в macOS Keychain
 - скачивать `Settings`, `Categories`, `Items` из Google Sheets
 - собирать локальные артефакты в `Application Support/MyataStaticMenuSwift/dist`
 - публиковать собранные файлы в Yandex Object Storage
@@ -30,22 +31,29 @@
 
 - `Refresh Menu` — build + publish
 - `Build` — только локальная сборка
-- `Publish` — загрузка файлов из `dist`
+- `Publish` — загрузка файлов из `dist`, а если их ещё нет, приложение сначала выполнит `Build`
 - `Migrate Images` — перенос всех `image_url` из таблицы в bucket
 
 ## Как открыть
 
-1. Открой `Package.swift` в Xcode.
-2. Выбери target `MyataStaticMenuSwift`.
+1. Открой `MyataStaticMenuSwift.xcodeproj` в Xcode.
+2. Выбери схему `MyataStaticMenuSwift`.
 3. Запусти приложение как обычный macOS app.
+
+Для быстрой проверки из терминала по-прежнему можно использовать:
+
+```bash
+swift build
+xcodebuild -project MyataStaticMenuSwift.xcodeproj -scheme MyataStaticMenuSwift -configuration Debug -derivedDataPath .xcode-derived build
+```
 
 ## Важное замечание
 
-Сейчас `Access Key ID` и `Secret Access Key` хранятся локально в `Application Support` вместе с конфигом приложения. Следующим шагом их лучше перенести в macOS Keychain.
+Файл конфигурации хранит только несекретные настройки. S3-ключи сохраняются в macOS Keychain.
 
 ## Roadmap
 
 1. Довести HTML-рендер до визуального паритета с web-версией
-2. Перенести секреты из локального конфига в Keychain
-3. Добавить предпросмотр собранного меню прямо в приложении
-4. Упаковать конфиг и статус в более polished macOS UX
+2. Добавить предпросмотр собранного меню прямо в приложении
+3. Подготовить экспортируемый `.app` и более polished macOS UX
+4. При необходимости добавить тесты на парсинг CSV, YML и S3-публикацию
