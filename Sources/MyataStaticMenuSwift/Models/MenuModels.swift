@@ -5,8 +5,12 @@ struct SourceConfiguration: Codable, Equatable {
     var settingsGID: String = "1486340064"
     var categoriesGID: String = "0"
     var itemsGID: String = "823879448"
+    var s3Endpoint: String = "https://storage.yandexcloud.net"
+    var s3Region: String = "ru-central1"
     var bucket: String = "hookah-menu-feed"
     var prefix: String = "menu"
+    var accessKeyID: String = ""
+    var secretAccessKey: String = ""
     var publicMenuURL: String = "https://storage.yandexcloud.net/hookah-menu-feed/menu/index.html"
     var yandexVendor: String = "Мята Ленинский"
 
@@ -69,4 +73,33 @@ struct GeneratedArtifact: Identifiable {
     var name: String
     var path: String
     var updatedAt: Date
+}
+
+enum OperationKind: String {
+    case build = "Build"
+    case publish = "Publish"
+    case refresh = "Refresh Menu"
+    case migrateImages = "Migrate Images"
+}
+
+struct OperationResult {
+    var kind: OperationKind
+    var success: Bool
+    var details: String
+    var finishedAt: Date
+}
+
+struct ImageMigrationManifest: Codable {
+    struct Entry: Codable, Identifiable {
+        var id: String { sourceURL }
+        var sourceURL: String
+        var targetURL: String
+        var key: String
+        var status: String
+    }
+
+    var oldPrefix: String
+    var newPrefix: String
+    var migratedCount: Int
+    var items: [Entry]
 }

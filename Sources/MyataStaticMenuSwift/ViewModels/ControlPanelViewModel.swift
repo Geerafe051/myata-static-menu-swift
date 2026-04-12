@@ -7,9 +7,12 @@ final class ControlPanelViewModel: ObservableObject {
     @Published var artifacts: [GeneratedArtifact] = []
     @Published var logs = ""
     @Published var lastBuildSummary = "Пока ничего не собрано."
+    @Published var lastOperation: OperationResult?
 
     private let settingsStore = SettingsStore()
     private let buildService = MenuBuildService()
+    private let publishService = PublishService()
+    private let imageMigrationService = ImageMigrationService()
 
     init() {
         Task {
@@ -36,30 +39,68 @@ final class ControlPanelViewModel: ObservableObject {
     }
 
     func buildMenu() async {
-        guard !isBusy else { return }
-        isBusy = true
-        appendLog("Starting native Swift build...\n")
-
-        do {
-            try await settingsStore.persist(configuration)
-            let result = try await buildService.build(using: configuration)
-            artifacts = result.artifacts
-            lastBuildSummary = "Собрано \(result.menuData.sections.count) категорий и \(result.menuData.items.count) позиций."
-            appendLog("Build finished successfully.\n")
-        } catch {
-            appendLog("Build failed: \(error.localizedDescription)\n")
-            lastBuildSummary = "Ошибка сборки"
+        await runOperation(.build) { [self] in
+            let result = try await self.buildService.build(using: self.configuration)
+            self.artifacts = result.artifacts
+            self.lastBuildSummary = "Собрано \(result.menuData.sections.count) категорий и \(result.menuData.items.count) позиций."
+            self.appendLog("Build finished successfully.\n")
+            return self.lastBuildSummary
         }
-
-        isBusy = false
     }
 
-    func markPlannedFeature(_ feature: String) {
-        appendLog("\(feature) будет реализован следующим этапом в Swift.\n")
+    func publishMenu() async {
+        await runOperation(.publish) { [self] in
+            let uploaded = try await self.publishService.publishArtifacts(configuration: self.configuration)
+            self.artifacts = uploaded
+            let detail = "Опубликовано \(uploaded.count) файлов в bucket."
+            self.appendLog("Publish finished successfully.\n")
+            return detail
+        }
+    }
+
+    func refreshMenu() async {
+        await runOperation(.refresh) { [self] in
+            let buildResult = try await self.buildService.build(using: self.configuration)
+            let uploaded = try await self.publishService.publishArtifacts(configuration: self.configuration)
+            self.artifacts = uploaded
+            let detail = "Собрано \(buildResult.menuData.sections.count) категорий и опубликовано \(uploaded.count) файлов."
+            self.lastBuildSummary = detail
+            self.appendLog("Refresh finished successfully.\n")
+            return detail
+        }
+    }
+
+    func migrateImages() async {
+        await runOperation(.migrateImages) { [self] in
+            let manifest = try await self.imageMigrationService.migrateImages(configuration: self.configuration)
+            self.appendLog("Image migration finished successfully.\n")
+            return "Перенесено \(manifest.migratedCount) изображений. Новый префикс: \(manifest.newPrefix)"
+        }
     }
 
     private func appendLog(_ line: String) {
         logs += "[\(DateFormatter.logTimestamp.string(from: Date()))] \(line)"
+    }
+
+    private func runOperation(_ kind: OperationKind, work: @escaping () async throws -> String) async {
+        guard !isBusy else { return }
+        isBusy = true
+        appendLog("Starting \(kind.rawValue)...\n")
+
+        do {
+            try await settingsStore.persist(configuration)
+            let detail = try await work()
+            lastOperation = OperationResult(kind: kind, success: true, details: detail, finishedAt: Date())
+        } catch {
+            let detail = error.localizedDescription
+            appendLog("\(kind.rawValue) failed: \(detail)\n")
+            lastOperation = OperationResult(kind: kind, success: false, details: detail, finishedAt: Date())
+            if kind == .build || kind == .refresh {
+                lastBuildSummary = "Ошибка сборки"
+            }
+        }
+
+        isBusy = false
     }
 }
 

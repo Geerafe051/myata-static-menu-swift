@@ -41,11 +41,11 @@ struct ControlPanelView: View {
                 .font(.title3.weight(.semibold))
 
             Button {
-                Task { await viewModel.buildMenu() }
+                Task { await viewModel.refreshMenu() }
             } label: {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Refresh Menu")
-                        .font(.title3.weight(.bold))
+                        .font(.title2.weight(.bold))
                     Text("Скачать данные из Google Sheets и локально собрать index.html, menu.json и yandex-menu.yml")
                         .font(.caption)
                         .multilineTextAlignment(.leading)
@@ -56,19 +56,34 @@ struct ControlPanelView: View {
             .buttonStyle(.borderedProminent)
             .controlSize(.large)
             .disabled(viewModel.isBusy)
+            .help("Скачать актуальные данные из Google Sheets, собрать артефакты и сразу опубликовать их в Yandex Object Storage.")
 
             HStack(spacing: 10) {
-                smallActionButton(title: "Publish", description: "Нативная публикация в S3 будет следующим этапом.") {
-                    viewModel.markPlannedFeature("Publish")
+                smallActionButton(title: "Build", description: "Только локально собрать index.html, menu.json и yandex-menu.yml без публикации.") {
+                    Task { await viewModel.buildMenu() }
                 }
-                smallActionButton(title: "Migrate Images", description: "Нативный перенос картинок будет следующим этапом.") {
-                    viewModel.markPlannedFeature("Migrate Images")
+                smallActionButton(title: "Publish", description: "Загрузить уже собранные файлы из dist в Yandex Object Storage.") {
+                    Task { await viewModel.publishMenu() }
+                }
+                smallActionButton(title: "Migrate Images", description: "Скачать все image_url из таблицы и перенести изображения в bucket в каталог img.") {
+                    Task { await viewModel.migrateImages() }
                 }
             }
 
-            Text(viewModel.lastBuildSummary)
-                .font(.callout)
-                .foregroundStyle(.secondary)
+            VStack(alignment: .leading, spacing: 6) {
+                Text(viewModel.lastBuildSummary)
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+
+                if let lastOperation = viewModel.lastOperation {
+                    Text("\(lastOperation.kind.rawValue): \(lastOperation.success ? "успех" : "ошибка")")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(lastOperation.success ? .green : .red)
+                    Text(lastOperation.details)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(18)
@@ -86,10 +101,18 @@ struct ControlPanelView: View {
                 labeledField("Categories GID", text: $viewModel.configuration.categoriesGID)
             }
             labeledField("Items GID", text: $viewModel.configuration.itemsGID)
+            HStack(spacing: 10) {
+                labeledField("S3 Endpoint", text: $viewModel.configuration.s3Endpoint)
+                labeledField("S3 Region", text: $viewModel.configuration.s3Region)
+            }
             labeledField("Bucket", text: $viewModel.configuration.bucket)
             HStack(spacing: 10) {
                 labeledField("Prefix", text: $viewModel.configuration.prefix)
                 labeledField("Yandex Vendor", text: $viewModel.configuration.yandexVendor)
+            }
+            HStack(spacing: 10) {
+                labeledField("Access Key ID", text: $viewModel.configuration.accessKeyID)
+                labeledField("Secret Access Key", text: $viewModel.configuration.secretAccessKey)
             }
             labeledField("Public Menu URL", text: $viewModel.configuration.publicMenuURL)
 
@@ -97,6 +120,9 @@ struct ControlPanelView: View {
                 Task { await viewModel.saveConfiguration() }
             }
             .buttonStyle(.bordered)
+            Text("Сейчас секреты хранятся локально в Application Support. Следующим шагом перенесём их в Keychain.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(18)

@@ -34,11 +34,3 @@ actor MenuBuildService {
         return MenuBuildResult(menuData: menuData, artifacts: artifacts)
     }
 }
-
-private extension JSONEncoder {
-    static var prettyPrinted: JSONEncoder {
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
-        return encoder
-    }
-}
