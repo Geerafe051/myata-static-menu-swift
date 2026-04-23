@@ -15,12 +15,19 @@ actor ImageMigrationService {
 
         for source in sourceURLs {
             guard let sourceURL = URL(string: source) else { continue }
+            let key = buildImageKey(from: sourceURL)
+
+            if try await client.objectExists(key: key) {
+                let targetURL = client.publicURL(for: key)
+                entries.append(.init(sourceURL: source, targetURL: targetURL.absoluteString, key: key, status: "skipped"))
+                continue
+            }
+
             let (data, response) = try await URLSession.shared.data(from: sourceURL)
             guard let httpResponse = response as? HTTPURLResponse, (200..<300).contains(httpResponse.statusCode) else {
                 throw NSError(domain: "ImageMigrationService", code: 2, userInfo: [NSLocalizedDescriptionKey: "Failed to download \(source)"])
             }
 
-            let key = buildImageKey(from: sourceURL)
             let contentType = httpResponse.value(forHTTPHeaderField: "Content-Type") ?? "application/octet-stream"
             let targetURL = try await client.upload(data: data, key: key, contentType: contentType, cacheControl: "public, max-age=31536000, immutable")
             entries.append(.init(sourceURL: source, targetURL: targetURL.absoluteString, key: key, status: "uploaded"))
@@ -29,7 +36,7 @@ actor ImageMigrationService {
         let manifest = ImageMigrationManifest(
             oldPrefix: "https://storage.yandexcloud.net/quickrestobase",
             newPrefix: "\(configuration.s3Endpoint)/\(configuration.bucket)/img",
-            migratedCount: entries.count,
+            migratedCount: entries.filter { $0.status == "uploaded" }.count,
             items: entries
         )
 

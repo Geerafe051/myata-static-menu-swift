@@ -54,6 +54,10 @@ enum HTMLRenderer {
                 :root { color-scheme: dark; --bg:#0a0b0d; --panel:#14181d; --border:#2b3139; --text:#f4f1ea; --muted:#9aa6b2; --accent:#d8a65c; }
                 * { box-sizing:border-box; } html { scroll-behavior:smooth; }
                 body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",sans-serif; background:linear-gradient(180deg,#090b0e,#10151b 50%,#090b0e); color:var(--text); }
+                .page-background { position:fixed; inset:0; z-index:-2; background:linear-gradient(180deg, rgba(8,8,10,.72), rgba(10,10,12,.84)), url("./menu-background.png") center center / cover no-repeat; pointer-events:none; transform:translateZ(0); }
+                body.age-gate-locked { overflow:hidden; }
+                .site-shell { transition:filter .18s ease, transform .18s ease; }
+                body.age-gate-locked .site-shell { filter:blur(16px); transform:scale(1.01); pointer-events:none; user-select:none; }
                 .shell { width:min(1180px, calc(100% - 24px)); margin:0 auto; }
                 .hero { padding:16px 0 12px; }
                 .hero-panel { display:grid; grid-template-columns:auto 1fr; gap:14px; align-items:center; padding:14px 16px; background:rgba(20,24,29,.95); border:1px solid var(--border); border-radius:22px; }
@@ -79,29 +83,111 @@ enum HTMLRenderer {
                 .card-top h3, .card-top strong { margin:0; font-size:20px; }
                 .card-top strong { color:var(--accent); white-space:nowrap; }
                 .card p { margin:10px 0 0; color:var(--muted); line-height:1.5; font-size:14px; }
+                .age-gate { position:fixed; inset:0; z-index:1000; display:flex; align-items:center; justify-content:center; padding:24px; background:rgba(6,6,8,.58); backdrop-filter:blur(10px); }
+                .age-gate[hidden] { display:none; }
+                .age-gate-dialog { width:min(100%, 520px); padding:24px; border-radius:24px; border:1px solid rgba(255,255,255,.1); background:linear-gradient(180deg, rgba(24,24,28,.98), rgba(18,18,21,.98)); box-shadow:0 24px 60px rgba(0,0,0,.45); }
+                .age-gate-dialog p { margin:0; color:var(--text); font-size:16px; line-height:1.65; }
+                .age-gate-actions { display:flex; gap:12px; margin-top:24px; }
+                .age-gate-button { flex:1 1 0; min-height:50px; border-radius:16px; border:1px solid var(--border); background:rgba(255,255,255,.04); color:var(--text); font:inherit; font-weight:600; cursor:pointer; }
+                .age-gate-button:hover { border-color:rgba(216,166,92,.45); }
+                .age-gate-button-primary { background:var(--accent); border-color:rgba(216,166,92,.8); color:#111114; }
+                .age-gate-button-primary:hover { border-color:rgba(255,255,255,.5); }
                 @media (max-width: 860px) {
                     .grid { grid-template-columns:repeat(2, minmax(0, 1fr)); gap:12px; }
                     .card-top { flex-direction:column; gap:4px; }
                     .card-top h3, .card-top strong { font-size:16px; }
                     .image { aspect-ratio:1/1; padding:8px; }
+                    .age-gate-dialog { padding:20px; border-radius:20px; }
+                    .age-gate-actions { flex-direction:column; }
                 }
             </style>
         </head>
-        <body>
-            <header class="hero">
-                <div class="shell hero-panel">
-                    \(logo)
-                    <div>
-                        \(subtitle)
-                        <h1>\(escape(menuData.settings.venueName))</h1>
-                        <div class="meta">\(address)\(phone)\(instagram)</div>
+        <body class="age-gate-locked">
+            <div class="page-background" aria-hidden="true"></div>
+            <div class="site-shell">
+                <header class="hero">
+                    <div class="shell hero-panel">
+                        \(logo)
+                        <div>
+                            \(subtitle)
+                            <h1>\(escape(menuData.settings.venueName))</h1>
+                            <div class="meta">\(address)\(phone)\(instagram)</div>
+                        </div>
+                    </div>
+                </header>
+                <div class="rail">
+                    <div class="shell rail-inner">\(navigation)</div>
+                </div>
+                <main class="shell main">\(sections)</main>
+            </div>
+            <div class="age-gate" id="age-gate">
+                <div class="age-gate-dialog" id="age-gate-question">
+                    <p>В соответствии с требованиями федерального законодательства, мы применяем меры по защите детей от информации, запрещенной для распространения среди них. К такой информации относится и часть содержания данной страницы. Вам есть 18 лет?</p>
+                    <div class="age-gate-actions">
+                        <button class="age-gate-button age-gate-button-primary" type="button" id="age-gate-yes">Да</button>
+                        <button class="age-gate-button" type="button" id="age-gate-no">Еще нет</button>
                     </div>
                 </div>
-            </header>
-            <div class="rail">
-                <div class="shell rail-inner">\(navigation)</div>
+                <div class="age-gate-dialog" id="age-gate-reject" hidden>
+                    <p>Мы будем очень ждать, пока вам исполнится 18 лет, а после этого обязательно заходите к нам на страничку!</p>
+                    <div class="age-gate-actions">
+                        <button class="age-gate-button age-gate-button-primary" type="button" id="age-gate-close">Закрыть сайт</button>
+                    </div>
+                </div>
             </div>
-            <main class="shell main">\(sections)</main>
+            <script>
+                (function () {
+                    var cookieName = "myata_age_verified";
+                    var gate = document.getElementById("age-gate");
+                    var question = document.getElementById("age-gate-question");
+                    var reject = document.getElementById("age-gate-reject");
+                    var yesButton = document.getElementById("age-gate-yes");
+                    var noButton = document.getElementById("age-gate-no");
+                    var closeButton = document.getElementById("age-gate-close");
+
+                    function hasConsent() {
+                        return document.cookie.split("; ").some(function (entry) {
+                            return entry === cookieName + "=true";
+                        });
+                    }
+
+                    function unlock() {
+                        document.body.classList.remove("age-gate-locked");
+                        if (gate) {
+                            gate.hidden = true;
+                        }
+                    }
+
+                    if (hasConsent()) {
+                        unlock();
+                        return;
+                    }
+
+                    if (yesButton) {
+                        yesButton.addEventListener("click", function () {
+                            document.cookie = cookieName + "=true; Max-Age=31536000; Path=/; SameSite=Lax";
+                            unlock();
+                        });
+                    }
+
+                    if (noButton) {
+                        noButton.addEventListener("click", function () {
+                            if (question) {
+                                question.hidden = true;
+                            }
+                            if (reject) {
+                                reject.hidden = false;
+                            }
+                        });
+                    }
+
+                    if (closeButton) {
+                        closeButton.addEventListener("click", function () {
+                            window.location.href = "https://ya.ru";
+                        });
+                    }
+                })();
+            </script>
         </body>
         </html>
         """

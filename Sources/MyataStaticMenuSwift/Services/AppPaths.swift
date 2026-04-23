@@ -12,6 +12,10 @@ enum AppPaths {
         applicationSupportDirectory.appendingPathComponent("SourceConfiguration.json")
     }
 
+    static var secretsFileURL: URL {
+        applicationSupportDirectory.appendingPathComponent("Secrets.json")
+    }
+
     static var distDirectory: URL {
         applicationSupportDirectory.appendingPathComponent("dist", isDirectory: true)
     }

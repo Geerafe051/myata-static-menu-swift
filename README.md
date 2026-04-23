@@ -1,4 +1,4 @@
-# Myata Static Menu Swift
+# Static Menu Publisher
 
 Нативное macOS-приложение на SwiftUI для управления статическим меню заведения.
 
@@ -45,6 +45,20 @@
 ```bash
 swift build
 xcodebuild -project MyataStaticMenuSwift.xcodeproj -scheme MyataStaticMenuSwift -configuration Debug -derivedDataPath .xcode-derived build
+```
+
+## Release `.app`
+
+Чтобы получить готовый bundle, который можно переложить в `Applications`, используй:
+
+```bash
+./scripts/build-release-app.sh
+```
+
+После сборки готовое приложение появится здесь:
+
+```bash
+release/Static Menu Publisher.app
 ```
 
 ## Важное замечание

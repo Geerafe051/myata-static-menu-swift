@@ -3,4 +3,8 @@
 .swiftpm
 DerivedData
 .xcode-derived
+.xcode-derived-release
+release
+xcuserdata
+*.xcuserstate
 Package.resolved

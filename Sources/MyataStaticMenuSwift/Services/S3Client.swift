@@ -105,6 +105,25 @@ struct S3Client {
         return publicURL(for: key)
     }
 
+    func objectExists(key: String) async throws -> Bool {
+        var request = URLRequest(url: publicURL(for: key))
+        request.httpMethod = "HEAD"
+
+        let (_, response) = try await URLSession.shared.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw NSError(domain: "S3Client", code: 4, userInfo: [NSLocalizedDescriptionKey: "Unexpected response while checking \(key)"])
+        }
+
+        switch httpResponse.statusCode {
+        case 200:
+            return true
+        case 404:
+            return false
+        default:
+            throw NSError(domain: "S3Client", code: 5, userInfo: [NSLocalizedDescriptionKey: "S3 existence check failed for \(key)"])
+        }
+    }
+
     func publicURL(for key: String) -> URL {
         URL(string: "\(configuration.s3Endpoint)/\(configuration.bucket)/\(key)")!
     }

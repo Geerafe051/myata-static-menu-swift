@@ -3,6 +3,9 @@ import Foundation
 @MainActor
 final class ControlPanelViewModel: ObservableObject {
     @Published var configuration = SourceConfiguration()
+    @Published var accessKeyIDDraft = ""
+    @Published var secretAccessKeyDraft = ""
+    @Published var isConfigurationLoaded = false
     @Published var isBusy = false
     @Published var artifacts: [GeneratedArtifact] = []
     @Published var logs = ""
@@ -23,15 +26,22 @@ final class ControlPanelViewModel: ObservableObject {
     func loadConfiguration() async {
         do {
             configuration = try await settingsStore.load()
+            accessKeyIDDraft = configuration.accessKeyID
+            secretAccessKeyDraft = configuration.secretAccessKey
+            isConfigurationLoaded = true
             appendLog("Loaded source configuration and resolved S3 secrets from Keychain.\n")
         } catch {
+            isConfigurationLoaded = true
             appendLog("Failed to load configuration: \(error.localizedDescription)\n")
         }
     }
 
     func saveConfiguration() async {
         do {
+            configuration = try await resolvedConfiguration()
             try await settingsStore.persist(configuration)
+            accessKeyIDDraft = configuration.accessKeyID
+            secretAccessKeyDraft = configuration.secretAccessKey
             appendLog("Saved source configuration and stored S3 secrets in Keychain.\n")
         } catch {
             appendLog("Failed to save configuration: \(error.localizedDescription)\n")
@@ -91,11 +101,19 @@ final class ControlPanelViewModel: ObservableObject {
 
     private func runOperation(_ kind: OperationKind, work: @escaping () async throws -> String) async {
         guard !isBusy else { return }
+        guard isConfigurationLoaded else {
+            appendLog("\(kind.rawValue) blocked: configuration is still loading.\n")
+            lastOperation = OperationResult(kind: kind, success: false, details: "Дождитесь загрузки настроек перед запуском операции.", finishedAt: Date())
+            return
+        }
         isBusy = true
         appendLog("Starting \(kind.rawValue)...\n")
 
         do {
+            configuration = try await resolvedConfiguration()
             try await settingsStore.persist(configuration)
+            accessKeyIDDraft = configuration.accessKeyID
+            secretAccessKeyDraft = configuration.secretAccessKey
             let detail = try await work()
             lastOperation = OperationResult(kind: kind, success: true, details: detail, finishedAt: Date())
         } catch {
@@ -108,6 +126,23 @@ final class ControlPanelViewModel: ObservableObject {
         }
 
         isBusy = false
+    }
+
+    private func resolvedConfiguration() async throws -> SourceConfiguration {
+        var resolved = try await settingsStore.resolveSecrets(for: configuration)
+
+        let accessKeyID = accessKeyIDDraft.trimmingCharacters(in: .whitespacesAndNewlines)
+        let secretAccessKey = secretAccessKeyDraft.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        if !accessKeyID.isEmpty {
+            resolved.accessKeyID = accessKeyID
+        }
+
+        if !secretAccessKey.isEmpty {
+            resolved.secretAccessKey = secretAccessKey
+        }
+
+        return resolved
     }
 }
 
