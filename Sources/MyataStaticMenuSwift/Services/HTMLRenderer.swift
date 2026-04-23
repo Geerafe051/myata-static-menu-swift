@@ -3,12 +3,11 @@ import Foundation
 enum HTMLRenderer {
     static func render(menuData: MenuData) -> String {
         let navigation = menuData.sections
-            .map { "<a class=\"pill\" href=\"#category-\(escape($0.category.id))\">\(escape($0.category.name))</a>" }
+            .map { "<a class=\"pill\" href=\"#category-\(escape($0.category.id))\" data-category-link=\"category-\(escape($0.category.id))\">\(escape($0.category.name))</a>" }
             .joined()
 
         let sections = menuData.sections.map { section in
             let cards = section.items.map { item in
-                let description = item.description.isEmpty ? "" : "<p>\(escape(item.description))</p>"
                 let image = item.imageURL.isEmpty
                     ? "<div class=\"image placeholder\">MYATA</div>"
                     : "<div class=\"image\"><img src=\"\(escape(item.imageURL))\" alt=\"\(escape(item.name))\"></div>"
@@ -30,7 +29,6 @@ enum HTMLRenderer {
                             <h3>\(escape(item.name))</h3>
                             <strong>\(formatPrice(item.price)) ₽</strong>
                         </div>
-                        \(description)
                     </div>
                 </article>
                 """
@@ -60,7 +58,7 @@ enum HTMLRenderer {
             <title>\(escape(menuData.settings.venueName))</title>
             \(favicon)
             <style>
-                :root { color-scheme: dark; --bg:#0a0b0d; --panel:#14181d; --border:#2b3139; --text:#f4f1ea; --muted:#9aa6b2; --accent:#d8a65c; }
+                :root { color-scheme: dark; --bg:#0a0b0d; --panel:#14181d; --border:#2b3139; --text:#f4f1ea; --muted:#9aa6b2; --accent:#d8a65c; --active-green:#123f2b; --active-green-border:#2a7a52; }
                 * { box-sizing:border-box; } html { scroll-behavior:smooth; }
                 body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",sans-serif; background:linear-gradient(180deg,#090b0e,#10151b 50%,#090b0e); color:var(--text); }
                 .page-background { position:fixed; inset:0; z-index:-2; background:linear-gradient(180deg, rgba(8,8,10,.72), rgba(10,10,12,.84)), url("./menu-background.png") center center / cover no-repeat; pointer-events:none; transform:translateZ(0); }
@@ -80,7 +78,9 @@ enum HTMLRenderer {
                 .meta-row span { color:var(--muted); }
                 .rail { position:sticky; top:0; z-index:20; backdrop-filter:blur(14px); background:rgba(10,11,13,.84); border-top:1px solid rgba(255,255,255,.05); border-bottom:1px solid rgba(255,255,255,.08); }
                 .rail-inner { display:flex; gap:10px; overflow:auto; padding:14px 0; }
-                .pill { flex:0 0 auto; color:var(--text); text-decoration:none; padding:11px 16px; border-radius:999px; border:1px solid var(--border); background:rgba(255,255,255,.03); }
+                .pill { flex:0 0 auto; color:var(--text); text-decoration:none; padding:11px 16px; border-radius:999px; border:1px solid var(--border); background:rgba(255,255,255,.03); transition:background .18s ease, border-color .18s ease, color .18s ease, transform .18s ease; }
+                .pill:hover { border-color:rgba(42,122,82,.68); background:rgba(18,63,43,.48); }
+                .pill.active { background:linear-gradient(180deg, rgba(28,86,59,.94), rgba(14,50,34,.94)); border-color:var(--active-green-border); color:#f5fff8; box-shadow:0 8px 24px rgba(0,0,0,.18); }
                 .main { padding:24px 0 64px; }
                 .section + .section { margin-top:52px; }
                 .section h2 { margin:0 0 18px; font-size:34px; font-weight:500; letter-spacing:-.02em; }
@@ -355,6 +355,66 @@ enum HTMLRenderer {
                             closeModal();
                         }
                     });
+                })();
+
+                (function () {
+                    var links = Array.prototype.slice.call(document.querySelectorAll("[data-category-link]"));
+                    var sections = links
+                        .map(function (link) {
+                            return document.getElementById(link.dataset.categoryLink);
+                        })
+                        .filter(Boolean);
+
+                    if (!links.length || !sections.length) {
+                        return;
+                    }
+
+                    function setActive(sectionId) {
+                        links.forEach(function (link) {
+                            var isActive = link.dataset.categoryLink === sectionId;
+                            link.classList.toggle("active", isActive);
+                            if (isActive) {
+                                link.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+                            }
+                        });
+                    }
+
+                    function updateActiveFromScroll() {
+                        var anchor = window.scrollY + 130;
+                        var current = sections[0];
+
+                        sections.forEach(function (section) {
+                            if (section.offsetTop <= anchor) {
+                                current = section;
+                            }
+                        });
+
+                        if (current) {
+                            setActive(current.id);
+                        }
+                    }
+
+                    links.forEach(function (link) {
+                        link.addEventListener("click", function () {
+                            setActive(link.dataset.categoryLink);
+                        });
+                    });
+
+                    var ticking = false;
+                    window.addEventListener("scroll", function () {
+                        if (ticking) {
+                            return;
+                        }
+
+                        ticking = true;
+                        window.requestAnimationFrame(function () {
+                            updateActiveFromScroll();
+                            ticking = false;
+                        });
+                    }, { passive: true });
+
+                    window.addEventListener("resize", updateActiveFromScroll);
+                    updateActiveFromScroll();
                 })();
             </script>
         </body>
