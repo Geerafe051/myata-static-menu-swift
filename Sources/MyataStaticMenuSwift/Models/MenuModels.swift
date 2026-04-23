@@ -94,6 +94,11 @@ struct MenuItem: Codable, Identifiable {
     var name: String
     var price: Int
     var description: String
+    var calories: String
+    var proteins: String
+    var fats: String
+    var carbohydrates: String
+    var portion: String
     var imageURL: String
     var available: Bool
     var availableOnMap: Bool

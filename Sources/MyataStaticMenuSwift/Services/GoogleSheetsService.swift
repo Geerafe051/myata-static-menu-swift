@@ -94,6 +94,11 @@ struct GoogleSheetsService {
                 name: name,
                 price: Int((row["price"] ?? "").replacingOccurrences(of: " ", with: "")) ?? 0,
                 description: row["description"] ?? "",
+                calories: cleanValue(row["calories"]),
+                proteins: cleanValue(row["proteins"]),
+                fats: cleanValue(row["fats"]),
+                carbohydrates: cleanValue(row["carbohydrates"]),
+                portion: portionValue(from: row, itemName: name),
                 imageURL: row["image_url"] ?? "",
                 available: parseBool(row["available"], defaultValue: true),
                 availableOnMap: parseBool(row["available_on_map"], defaultValue: false),
@@ -107,6 +112,67 @@ struct GoogleSheetsService {
             }
             return $0.sortOrder < $1.sortOrder
         }
+    }
+
+    private func cleanValue(_ value: String?) -> String {
+        value?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+    }
+
+    private func portionValue(from row: [String: String], itemName: String) -> String {
+        let explicitValue = [
+            row["portion"],
+            row["weight"],
+            row["mass"],
+            row["volume"],
+            row["serving"],
+        ]
+        .compactMap { cleanValue($0) }
+        .first { !$0.isEmpty }
+
+        if let explicitValue {
+            return explicitValue
+        }
+
+        let portion = inferredPortion(from: itemName)
+        return portion.isEmpty ? inferredDrinkVolume(from: itemName) : portion
+    }
+
+    private func inferredPortion(from itemName: String) -> String {
+        let pattern = #"(?i)(\d+(?:[,.]\d+)?)\s*(мл|л|г|кг)\.?"#
+        guard let regex = try? NSRegularExpression(pattern: pattern) else {
+            return ""
+        }
+
+        let range = NSRange(itemName.startIndex..<itemName.endIndex, in: itemName)
+        guard let match = regex.matches(in: itemName, range: range).last else {
+            return ""
+        }
+
+        guard
+            let valueRange = Range(match.range(at: 1), in: itemName),
+            let unitRange = Range(match.range(at: 2), in: itemName)
+        else {
+            return ""
+        }
+
+        return "\(itemName[valueRange]) \(itemName[unitRange])"
+    }
+
+    private func inferredDrinkVolume(from itemName: String) -> String {
+        let pattern = #"\b(0[,.]\d{1,2})\b"#
+        guard let regex = try? NSRegularExpression(pattern: pattern) else {
+            return ""
+        }
+
+        let range = NSRange(itemName.startIndex..<itemName.endIndex, in: itemName)
+        guard
+            let match = regex.matches(in: itemName, range: range).last,
+            let valueRange = Range(match.range(at: 1), in: itemName)
+        else {
+            return ""
+        }
+
+        return "\(itemName[valueRange]) л"
     }
 
     private func parseBool(_ value: String?, defaultValue: Bool) -> Bool {

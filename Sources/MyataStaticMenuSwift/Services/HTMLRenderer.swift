@@ -14,7 +14,16 @@ enum HTMLRenderer {
                     : "<div class=\"image\"><img src=\"\(escape(item.imageURL))\" alt=\"\(escape(item.name))\"></div>"
 
                 return """
-                <article class="card">
+                <article class="card" role="button" tabindex="0"
+                    data-item-name="\(escape(item.name))"
+                    data-item-price="\(formatPrice(item.price)) ₽"
+                    data-item-description="\(escape(item.description))"
+                    data-item-image="\(escape(item.imageURL))"
+                    data-item-portion="\(escape(item.portion))"
+                    data-item-calories="\(escape(item.calories))"
+                    data-item-proteins="\(escape(item.proteins))"
+                    data-item-fats="\(escape(item.fats))"
+                    data-item-carbohydrates="\(escape(item.carbohydrates))">
                     \(image)
                     <div class="card-body">
                         <div class="card-top">
@@ -56,8 +65,10 @@ enum HTMLRenderer {
                 body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",sans-serif; background:linear-gradient(180deg,#090b0e,#10151b 50%,#090b0e); color:var(--text); }
                 .page-background { position:fixed; inset:0; z-index:-2; background:linear-gradient(180deg, rgba(8,8,10,.72), rgba(10,10,12,.84)), url("./menu-background.png") center center / cover no-repeat; pointer-events:none; transform:translateZ(0); }
                 body.age-gate-locked { overflow:hidden; }
+                body.item-modal-open { overflow:hidden; }
                 .site-shell { transition:filter .18s ease, transform .18s ease; }
                 body.age-gate-locked .site-shell { filter:blur(16px); transform:scale(1.01); pointer-events:none; user-select:none; }
+                body.item-modal-open .site-shell { filter:blur(10px); pointer-events:none; user-select:none; }
                 .shell { width:min(1180px, calc(100% - 24px)); margin:0 auto; }
                 .hero { padding:16px 0 12px; }
                 .hero-panel { display:grid; grid-template-columns:auto 1fr; gap:14px; align-items:center; padding:14px 16px; background:rgba(20,24,29,.95); border:1px solid var(--border); border-radius:22px; }
@@ -72,17 +83,37 @@ enum HTMLRenderer {
                 .pill { flex:0 0 auto; color:var(--text); text-decoration:none; padding:11px 16px; border-radius:999px; border:1px solid var(--border); background:rgba(255,255,255,.03); }
                 .main { padding:24px 0 64px; }
                 .section + .section { margin-top:52px; }
-                .section h2 { margin:0 0 18px; font-size:34px; }
+                .section h2 { margin:0 0 18px; font-size:34px; font-weight:500; letter-spacing:-.02em; }
                 .grid { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:18px; }
-                .card { overflow:hidden; border-radius:26px; background:rgba(20,24,29,.94); border:1px solid var(--border); }
+                .card { overflow:hidden; border-radius:26px; background:rgba(20,24,29,.94); border:1px solid var(--border); cursor:pointer; transition:transform .16s ease, border-color .16s ease, background .16s ease; }
+                .card:hover { transform:translateY(-2px); border-color:rgba(216,166,92,.36); background:rgba(24,28,33,.96); }
+                .card:focus-visible { outline:2px solid rgba(216,166,92,.72); outline-offset:3px; }
                 .image { aspect-ratio:4/3; display:grid; place-items:center; padding:10px; background:linear-gradient(135deg, rgba(216,166,92,.18), rgba(255,255,255,.04)); }
                 .image img { width:100%; height:100%; object-fit:contain; border-radius:18px; }
                 .placeholder { letter-spacing:.34em; font-weight:700; color:rgba(255,255,255,.66); }
                 .card-body { padding:14px; }
                 .card-top { display:flex; justify-content:space-between; gap:12px; align-items:baseline; }
-                .card-top h3, .card-top strong { margin:0; font-size:20px; }
+                .card-top h3, .card-top strong { margin:0; font-size:20px; font-weight:500; letter-spacing:-.01em; }
                 .card-top strong { color:var(--accent); white-space:nowrap; }
                 .card p { margin:10px 0 0; color:var(--muted); line-height:1.5; font-size:14px; }
+                .item-modal { position:fixed; inset:0; z-index:900; display:flex; align-items:center; justify-content:center; padding:22px; background:rgba(4,4,6,.62); backdrop-filter:blur(14px); }
+                .item-modal[hidden] { display:none; }
+                .item-modal-dialog { position:relative; width:min(100%, 1120px); min-height:540px; display:grid; grid-template-columns:minmax(320px, 1.05fr) minmax(360px, .95fr); overflow:hidden; border-radius:32px; border:1px solid rgba(255,255,255,.08); background:linear-gradient(135deg, rgba(3,4,5,.96), rgba(23,24,26,.96)); box-shadow:0 28px 90px rgba(0,0,0,.62); }
+                .item-modal-media { display:grid; place-items:center; min-height:540px; padding:42px; background:radial-gradient(circle at center, rgba(216,166,92,.12), transparent 42%), rgba(0,0,0,.44); }
+                .item-modal-media img { width:100%; height:100%; max-height:500px; object-fit:contain; border-radius:24px; }
+                .item-modal-placeholder { width:100%; min-height:360px; display:grid; place-items:center; border-radius:24px; background:rgba(255,255,255,.04); color:rgba(255,255,255,.5); letter-spacing:.34em; }
+                .item-modal-content { display:flex; flex-direction:column; gap:24px; padding:44px 48px 48px; }
+                .item-modal-title { margin:0; font-size:34px; font-weight:500; letter-spacing:-.025em; }
+                .nutrition-grid { display:grid; grid-template-columns:repeat(5, minmax(0, 1fr)); gap:0; color:var(--muted); }
+                .nutrition-cell { min-width:0; padding:0 14px 0 0; border-right:1px solid rgba(255,255,255,.12); }
+                .nutrition-cell:last-child { border-right:0; }
+                .nutrition-label { display:block; font-size:18px; line-height:1.15; color:rgba(244,241,234,.52); }
+                .nutrition-value { display:block; margin-top:4px; font-size:18px; color:rgba(244,241,234,.72); }
+                .item-modal-description { margin:0; max-width:640px; color:rgba(244,241,234,.58); font-size:20px; line-height:1.45; letter-spacing:.02em; }
+                .item-modal-price { margin-top:auto; min-height:64px; display:flex; align-items:center; justify-content:center; border-radius:20px; background:rgba(255,255,255,.08); color:var(--text); font-size:28px; font-weight:500; }
+                .item-modal-close { position:absolute; top:18px; right:20px; width:44px; height:44px; display:grid; place-items:center; border:0; background:transparent; color:rgba(255,255,255,.42); font-size:42px; line-height:1; cursor:pointer; }
+                .item-modal-close:hover { color:rgba(255,255,255,.78); }
+                .item-modal-back { display:none; align-self:flex-start; border:0; background:transparent; color:var(--text); font:inherit; font-weight:500; padding:0; cursor:pointer; }
                 .age-gate { position:fixed; inset:0; z-index:1000; display:flex; align-items:center; justify-content:center; padding:24px; background:rgba(6,6,8,.58); backdrop-filter:blur(10px); }
                 .age-gate[hidden] { display:none; }
                 .age-gate-dialog { width:min(100%, 520px); padding:24px; border-radius:24px; border:1px solid rgba(255,255,255,.1); background:linear-gradient(180deg, rgba(24,24,28,.98), rgba(18,18,21,.98)); box-shadow:0 24px 60px rgba(0,0,0,.45); }
@@ -97,6 +128,20 @@ enum HTMLRenderer {
                     .card-top { flex-direction:column; gap:4px; }
                     .card-top h3, .card-top strong { font-size:16px; }
                     .image { aspect-ratio:1/1; padding:8px; }
+                    .item-modal { align-items:stretch; padding:0; background:rgba(8,8,10,.92); }
+                    .item-modal-dialog { width:100%; min-height:100dvh; border-radius:0; border:0; grid-template-columns:1fr; overflow:auto; }
+                    .item-modal-media { min-height:38dvh; padding:22px 22px 8px; }
+                    .item-modal-media img { max-height:36dvh; border-radius:18px; }
+                    .item-modal-placeholder { min-height:28dvh; }
+                    .item-modal-content { padding:18px 20px 28px; gap:18px; }
+                    .item-modal-title { font-size:28px; }
+                    .nutrition-grid { grid-template-columns:repeat(2, minmax(0, 1fr)); gap:12px 0; }
+                    .nutrition-cell { border-right:0; padding:0; }
+                    .nutrition-label, .nutrition-value { font-size:16px; }
+                    .item-modal-description { font-size:16px; }
+                    .item-modal-price { min-height:56px; font-size:24px; }
+                    .item-modal-close { display:none; }
+                    .item-modal-back { display:inline-flex; }
                     .age-gate-dialog { padding:20px; border-radius:20px; }
                     .age-gate-actions { flex-direction:column; }
                 }
@@ -119,6 +164,40 @@ enum HTMLRenderer {
                     <div class="shell rail-inner">\(navigation)</div>
                 </div>
                 <main class="shell main">\(sections)</main>
+            </div>
+            <div class="item-modal" id="item-modal" hidden>
+                <article class="item-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="item-modal-title">
+                    <button class="item-modal-close" type="button" id="item-modal-close" aria-label="Закрыть" title="Закрыть">×</button>
+                    <div class="item-modal-media" id="item-modal-media"></div>
+                    <div class="item-modal-content">
+                        <button class="item-modal-back" type="button" id="item-modal-back">← Назад</button>
+                        <h2 class="item-modal-title" id="item-modal-title"></h2>
+                        <div class="nutrition-grid" aria-label="КБЖУ на порцию">
+                            <div class="nutrition-cell">
+                                <span class="nutrition-label">Порция</span>
+                                <span class="nutrition-value" id="item-modal-portion">—</span>
+                            </div>
+                            <div class="nutrition-cell">
+                                <span class="nutrition-label">Ккал</span>
+                                <span class="nutrition-value" id="item-modal-calories">—</span>
+                            </div>
+                            <div class="nutrition-cell">
+                                <span class="nutrition-label">Белки</span>
+                                <span class="nutrition-value" id="item-modal-proteins">—</span>
+                            </div>
+                            <div class="nutrition-cell">
+                                <span class="nutrition-label">Жиры</span>
+                                <span class="nutrition-value" id="item-modal-fats">—</span>
+                            </div>
+                            <div class="nutrition-cell">
+                                <span class="nutrition-label">Углеводы</span>
+                                <span class="nutrition-value" id="item-modal-carbohydrates">—</span>
+                            </div>
+                        </div>
+                        <p class="item-modal-description" id="item-modal-description"></p>
+                        <div class="item-modal-price" id="item-modal-price"></div>
+                    </div>
+                </article>
             </div>
             <div class="age-gate" id="age-gate">
                 <div class="age-gate-dialog" id="age-gate-question">
@@ -186,6 +265,96 @@ enum HTMLRenderer {
                             window.location.href = "https://ya.ru";
                         });
                     }
+                })();
+
+                (function () {
+                    var modal = document.getElementById("item-modal");
+                    var media = document.getElementById("item-modal-media");
+                    var title = document.getElementById("item-modal-title");
+                    var description = document.getElementById("item-modal-description");
+                    var price = document.getElementById("item-modal-price");
+                    var closeButton = document.getElementById("item-modal-close");
+                    var backButton = document.getElementById("item-modal-back");
+                    var fields = {
+                        portion: document.getElementById("item-modal-portion"),
+                        calories: document.getElementById("item-modal-calories"),
+                        proteins: document.getElementById("item-modal-proteins"),
+                        fats: document.getElementById("item-modal-fats"),
+                        carbohydrates: document.getElementById("item-modal-carbohydrates")
+                    };
+
+                    function valueOrDash(value) {
+                        return value && value.trim() ? value.trim() : "—";
+                    }
+
+                    function openModal(card) {
+                        if (!modal || !media || !title || !description || !price) {
+                            return;
+                        }
+
+                        var imageURL = card.dataset.itemImage || "";
+                        media.innerHTML = imageURL
+                            ? '<img src="' + imageURL.replace(/"/g, "&quot;") + '" alt="">'
+                            : '<div class="item-modal-placeholder">MYATA</div>';
+
+                        title.textContent = card.dataset.itemName || "";
+                        description.textContent = card.dataset.itemDescription || "";
+                        description.hidden = !description.textContent.trim();
+                        price.textContent = card.dataset.itemPrice || "";
+
+                        fields.portion.textContent = valueOrDash(card.dataset.itemPortion);
+                        fields.calories.textContent = valueOrDash(card.dataset.itemCalories);
+                        fields.proteins.textContent = valueOrDash(card.dataset.itemProteins);
+                        fields.fats.textContent = valueOrDash(card.dataset.itemFats);
+                        fields.carbohydrates.textContent = valueOrDash(card.dataset.itemCarbohydrates);
+
+                        modal.hidden = false;
+                        document.body.classList.add("item-modal-open");
+                    }
+
+                    function closeModal() {
+                        if (!modal) {
+                            return;
+                        }
+
+                        modal.hidden = true;
+                        document.body.classList.remove("item-modal-open");
+                    }
+
+                    document.querySelectorAll(".card").forEach(function (card) {
+                        card.addEventListener("click", function () {
+                            openModal(card);
+                        });
+
+                        card.addEventListener("keydown", function (event) {
+                            if (event.key === "Enter" || event.key === " ") {
+                                event.preventDefault();
+                                openModal(card);
+                            }
+                        });
+                    });
+
+                    if (closeButton) {
+                        closeButton.addEventListener("click", closeModal);
+                    }
+
+                    if (backButton) {
+                        backButton.addEventListener("click", closeModal);
+                    }
+
+                    if (modal) {
+                        modal.addEventListener("click", function (event) {
+                            if (event.target === modal) {
+                                closeModal();
+                            }
+                        });
+                    }
+
+                    document.addEventListener("keydown", function (event) {
+                        if (event.key === "Escape" && modal && !modal.hidden) {
+                            closeModal();
+                        }
+                    });
                 })();
             </script>
         </body>
