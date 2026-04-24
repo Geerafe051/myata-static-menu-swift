@@ -1,6 +1,7 @@
 import Foundation
 
 struct SourceConfiguration: Codable, Equatable {
+    var spreadsheetURL: String = "https://docs.google.com/spreadsheets/d/1s4R3MAhKlQLbCyy-AFl9QISEviAcgik5fxkwPpD_lUc/edit?usp=sharing"
     var googleSheetID: String = "1s4R3MAhKlQLbCyy-AFl9QISEviAcgik5fxkwPpD_lUc"
     var settingsGID: String = "1486340064"
     var categoriesGID: String = "0"
@@ -14,15 +15,33 @@ struct SourceConfiguration: Codable, Equatable {
     var publicMenuURL: String = "https://storage.yandexcloud.net/hookah-menu-feed/menu/index.html"
     var yandexVendor: String = "Мята Ленинский"
 
-    func csvURL(for gid: String) -> URL? {
-        guard !googleSheetID.isEmpty, !gid.isEmpty else {
+    var resolvedGoogleSheetID: String {
+        if let extracted = extractSheetID(from: spreadsheetURL), !extracted.isEmpty {
+            return extracted
+        }
+
+        return googleSheetID
+    }
+
+    func csvURL(forSheetNamed sheetName: String) -> URL? {
+        guard !resolvedGoogleSheetID.isEmpty, !sheetName.isEmpty else {
             return nil
         }
 
-        return URL(string: "https://docs.google.com/spreadsheets/d/\(googleSheetID)/export?format=csv&gid=\(gid)")
+        let encodedSheetName = sheetName.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? sheetName
+        return URL(string: "https://docs.google.com/spreadsheets/d/\(resolvedGoogleSheetID)/gviz/tq?tqx=out:csv&sheet=\(encodedSheetName)")
+    }
+
+    func legacyCSVURL(for gid: String) -> URL? {
+        guard !resolvedGoogleSheetID.isEmpty, !gid.isEmpty else {
+            return nil
+        }
+
+        return URL(string: "https://docs.google.com/spreadsheets/d/\(resolvedGoogleSheetID)/export?format=csv&gid=\(gid)")
     }
 
     enum CodingKeys: String, CodingKey {
+        case spreadsheetURL
         case googleSheetID
         case settingsGID
         case categoriesGID
@@ -40,6 +59,10 @@ struct SourceConfiguration: Codable, Equatable {
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         googleSheetID = try container.decodeIfPresent(String.self, forKey: .googleSheetID) ?? "1s4R3MAhKlQLbCyy-AFl9QISEviAcgik5fxkwPpD_lUc"
+        let storedSpreadsheetURL = try container.decodeIfPresent(String.self, forKey: .spreadsheetURL) ?? ""
+        spreadsheetURL = storedSpreadsheetURL.isEmpty
+            ? "https://docs.google.com/spreadsheets/d/\(googleSheetID)/edit?usp=sharing"
+            : storedSpreadsheetURL
         settingsGID = try container.decodeIfPresent(String.self, forKey: .settingsGID) ?? "1486340064"
         categoriesGID = try container.decodeIfPresent(String.self, forKey: .categoriesGID) ?? "0"
         itemsGID = try container.decodeIfPresent(String.self, forKey: .itemsGID) ?? "823879448"
@@ -55,7 +78,8 @@ struct SourceConfiguration: Codable, Equatable {
 
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(googleSheetID, forKey: .googleSheetID)
+        try container.encode(spreadsheetURL, forKey: .spreadsheetURL)
+        try container.encode(resolvedGoogleSheetID, forKey: .googleSheetID)
         try container.encode(settingsGID, forKey: .settingsGID)
         try container.encode(categoriesGID, forKey: .categoriesGID)
         try container.encode(itemsGID, forKey: .itemsGID)
@@ -65,6 +89,20 @@ struct SourceConfiguration: Codable, Equatable {
         try container.encode(prefix, forKey: .prefix)
         try container.encode(publicMenuURL, forKey: .publicMenuURL)
         try container.encode(yandexVendor, forKey: .yandexVendor)
+    }
+
+    private func extractSheetID(from value: String) -> String? {
+        guard !value.isEmpty else {
+            return nil
+        }
+
+        if let range = value.range(of: #"/d/([a-zA-Z0-9-_]+)"#, options: .regularExpression) {
+            let match = String(value[range])
+            return String(match.dropFirst(3))
+        }
+
+        let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? nil : trimmed
     }
 }
 

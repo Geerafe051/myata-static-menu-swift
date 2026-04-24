@@ -2,9 +2,27 @@ import Foundation
 
 struct GoogleSheetsService {
     func loadMenuData(using configuration: SourceConfiguration) async throws -> MenuData {
-        let settingsRows = try await fetchRows(from: configuration.csvURL(for: configuration.settingsGID), name: "Settings")
-        let categoryRows = try await fetchRows(from: configuration.csvURL(for: configuration.categoriesGID), name: "Categories")
-        let itemRows = try await fetchRows(from: configuration.csvURL(for: configuration.itemsGID), name: "Items")
+        let settingsRows = try await fetchRows(
+            from: [
+                configuration.csvURL(forSheetNamed: "Settings"),
+                configuration.legacyCSVURL(for: configuration.settingsGID),
+            ],
+            name: "Settings"
+        )
+        let categoryRows = try await fetchRows(
+            from: [
+                configuration.csvURL(forSheetNamed: "Categories"),
+                configuration.legacyCSVURL(for: configuration.categoriesGID),
+            ],
+            name: "Categories"
+        )
+        let itemRows = try await fetchRows(
+            from: [
+                configuration.csvURL(forSheetNamed: "Items"),
+                configuration.legacyCSVURL(for: configuration.itemsGID),
+            ],
+            name: "Items"
+        )
 
         let settings = mapSettings(settingsRows, configuration: configuration)
         let categories = mapCategories(categoryRows)
@@ -24,21 +42,32 @@ struct GoogleSheetsService {
         )
     }
 
-    private func fetchRows(from url: URL?, name: String) async throws -> [[String: String]] {
-        guard let url else {
+    private func fetchRows(from urls: [URL?], name: String) async throws -> [[String: String]] {
+        let candidates = urls.compactMap { $0 }
+        guard !candidates.isEmpty else {
             throw NSError(domain: "GoogleSheetsService", code: 1, userInfo: [NSLocalizedDescriptionKey: "Missing CSV URL for \(name)"])
         }
 
-        let (data, response) = try await URLSession.shared.data(from: url)
-        guard let httpResponse = response as? HTTPURLResponse, (200..<300).contains(httpResponse.statusCode) else {
-            throw NSError(domain: "GoogleSheetsService", code: 2, userInfo: [NSLocalizedDescriptionKey: "Failed to fetch \(name) CSV"])
+        var lastError: Error?
+
+        for url in candidates {
+            do {
+                let (data, response) = try await URLSession.shared.data(from: url)
+                guard let httpResponse = response as? HTTPURLResponse, (200..<300).contains(httpResponse.statusCode) else {
+                    throw NSError(domain: "GoogleSheetsService", code: 2, userInfo: [NSLocalizedDescriptionKey: "Failed to fetch \(name) CSV"])
+                }
+
+                guard let source = String(data: data, encoding: .utf8) else {
+                    throw NSError(domain: "GoogleSheetsService", code: 3, userInfo: [NSLocalizedDescriptionKey: "Failed to decode \(name) CSV"])
+                }
+
+                return CSVParser.parse(source)
+            } catch {
+                lastError = error
+            }
         }
 
-        guard let source = String(data: data, encoding: .utf8) else {
-            throw NSError(domain: "GoogleSheetsService", code: 3, userInfo: [NSLocalizedDescriptionKey: "Failed to decode \(name) CSV"])
-        }
-
-        return CSVParser.parse(source)
+        throw lastError ?? NSError(domain: "GoogleSheetsService", code: 4, userInfo: [NSLocalizedDescriptionKey: "Failed to load \(name) CSV"])
     }
 
     private func mapSettings(_ rows: [[String: String]], configuration: SourceConfiguration) -> MenuSettings {

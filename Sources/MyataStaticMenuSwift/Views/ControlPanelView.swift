@@ -275,14 +275,11 @@ struct SettingsView: View {
                 }
 
                 settingsSection(title: "Google Sheets") {
-                    labeledField("Google Sheet ID", text: $viewModel.configuration.googleSheetID)
+                    labeledField("Spreadsheet URL", text: $viewModel.configuration.spreadsheetURL)
 
-                    adaptiveFields {
-                        labeledField("Settings GID", text: $viewModel.configuration.settingsGID)
-                        labeledField("Categories GID", text: $viewModel.configuration.categoriesGID)
-                    }
-
-                    labeledField("Items GID", text: $viewModel.configuration.itemsGID)
+                    Text("Вставь обычную ссылку на Google Sheets вида `https://docs.google.com/spreadsheets/d/.../edit?...`. Листы `Settings`, `Categories` и `Items` приложение найдёт само.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
                 }
 
                 settingsSection(title: "S3") {
