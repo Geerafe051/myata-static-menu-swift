@@ -22,7 +22,8 @@ enum HTMLRenderer {
                     data-item-calories="\(escape(item.calories))"
                     data-item-proteins="\(escape(item.proteins))"
                     data-item-fats="\(escape(item.fats))"
-                    data-item-carbohydrates="\(escape(item.carbohydrates))">
+                    data-item-carbohydrates="\(escape(item.carbohydrates))"
+                    data-item-show-nf="\(item.showNutritionFacts ? "true" : "false")">
                     \(image)
                     <div class="card-body">
                         <div class="card-top">
@@ -105,6 +106,7 @@ enum HTMLRenderer {
                 .item-modal-content { display:flex; flex-direction:column; gap:24px; padding:44px 48px 48px; }
                 .item-modal-title { margin:0; font-size:34px; font-weight:500; letter-spacing:-.025em; }
                 .nutrition-grid { display:grid; grid-template-columns:repeat(5, minmax(0, 1fr)); gap:0; color:var(--muted); }
+                .nutrition-grid[hidden] { display:none; }
                 .nutrition-cell { min-width:0; padding:0 14px 0 0; border-right:1px solid rgba(255,255,255,.12); }
                 .nutrition-cell:last-child { border-right:0; }
                 .nutrition-label { display:block; font-size:18px; line-height:1.15; color:rgba(244,241,234,.52); }
@@ -273,6 +275,7 @@ enum HTMLRenderer {
                     var title = document.getElementById("item-modal-title");
                     var description = document.getElementById("item-modal-description");
                     var price = document.getElementById("item-modal-price");
+                    var nutritionGrid = document.querySelector(".nutrition-grid");
                     var closeButton = document.getElementById("item-modal-close");
                     var backButton = document.getElementById("item-modal-back");
                     var fields = {
@@ -302,11 +305,18 @@ enum HTMLRenderer {
                         description.hidden = !description.textContent.trim();
                         price.textContent = card.dataset.itemPrice || "";
 
-                        fields.portion.textContent = valueOrDash(card.dataset.itemPortion);
-                        fields.calories.textContent = valueOrDash(card.dataset.itemCalories);
-                        fields.proteins.textContent = valueOrDash(card.dataset.itemProteins);
-                        fields.fats.textContent = valueOrDash(card.dataset.itemFats);
-                        fields.carbohydrates.textContent = valueOrDash(card.dataset.itemCarbohydrates);
+                        var showNutritionFacts = (card.dataset.itemShowNf || "").toLowerCase() === "true";
+                        if (nutritionGrid) {
+                            nutritionGrid.hidden = !showNutritionFacts;
+                        }
+
+                        if (showNutritionFacts) {
+                            fields.portion.textContent = valueOrDash(card.dataset.itemPortion);
+                            fields.calories.textContent = valueOrDash(card.dataset.itemCalories);
+                            fields.proteins.textContent = valueOrDash(card.dataset.itemProteins);
+                            fields.fats.textContent = valueOrDash(card.dataset.itemFats);
+                            fields.carbohydrates.textContent = valueOrDash(card.dataset.itemCarbohydrates);
+                        }
 
                         modal.hidden = false;
                         document.body.classList.add("item-modal-open");

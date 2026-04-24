@@ -102,6 +102,7 @@ struct MenuItem: Codable, Identifiable {
     var imageURL: String
     var available: Bool
     var availableOnMap: Bool
+    var showNutritionFacts: Bool
     var sortOrder: Int
 }
 
