@@ -9,12 +9,11 @@ enum CSVParser {
 
         guard !normalized.isEmpty else { return [] }
 
-        let lines = normalized.split(separator: "\n", omittingEmptySubsequences: false).map(String.init)
-        guard let headerLine = lines.first else { return [] }
-        let headers = splitCSVLine(headerLine).map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+        let rows = splitCSVRows(normalized)
+        guard let headerRow = rows.first else { return [] }
+        let headers = headerRow.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
 
-        return lines.dropFirst().map { line in
-            let cells = splitCSVLine(line)
+        return rows.dropFirst().map { cells in
             var row: [String: String] = [:]
 
             for (index, header) in headers.enumerated() {
@@ -25,11 +24,12 @@ enum CSVParser {
         }
     }
 
-    private static func splitCSVLine(_ line: String) -> [String] {
-        var values: [String] = []
+    private static func splitCSVRows(_ source: String) -> [[String]] {
+        var rows: [[String]] = []
+        var currentRow: [String] = []
         var current = ""
         var inQuotes = false
-        let characters = Array(line)
+        let characters = Array(source)
         var index = 0
 
         while index < characters.count {
@@ -44,7 +44,12 @@ enum CSVParser {
                     inQuotes.toggle()
                 }
             } else if character == ",", !inQuotes {
-                values.append(current)
+                currentRow.append(current)
+                current = ""
+            } else if character == "\n", !inQuotes {
+                currentRow.append(current)
+                rows.append(currentRow)
+                currentRow = []
                 current = ""
             } else {
                 current.append(character)
@@ -53,7 +58,8 @@ enum CSVParser {
             index += 1
         }
 
-        values.append(current)
-        return values
+        currentRow.append(current)
+        rows.append(currentRow)
+        return rows
     }
 }
