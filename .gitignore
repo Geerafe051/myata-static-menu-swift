@@ -8,3 +8,4 @@ release
 xcuserdata
 *.xcuserstate
 Package.resolved
+Config/build-number.txt

@@ -55,6 +55,12 @@ xcodebuild -project MyataStaticMenuSwift.xcodeproj -scheme MyataStaticMenuSwift 
 ./scripts/build-release-app.sh
 ```
 
+Схема версионирования:
+
+- `MARKETING_VERSION` (`major.minor`) меняется вручную в проекте, когда это нужно.
+- `CURRENT_PROJECT_VERSION` (`build`) увеличивается автоматически при каждом успешном запуске `build-release-app.sh`.
+- локальный счётчик сборки хранится в `Config/build-number.txt` и не коммитится в git.
+
 После сборки готовое приложение появится здесь:
 
 ```bash
