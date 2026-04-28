@@ -84,6 +84,7 @@ enum HTMLRenderer {
                 .pill.active { background:linear-gradient(180deg, rgba(28,86,59,.94), rgba(14,50,34,.94)); border-color:var(--active-green-border); color:#f5fff8; box-shadow:0 8px 24px rgba(0,0,0,.18); }
                 .main { padding:24px 0 64px; }
                 .section + .section { margin-top:52px; }
+                .section { scroll-margin-top:110px; }
                 .section h2 { margin:0 0 18px; font-size:34px; font-weight:500; letter-spacing:-.02em; }
                 .grid { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:18px; }
                 .card { overflow:hidden; border-radius:26px; background:rgba(20,24,29,.94); border:1px solid var(--border); cursor:pointer; transition:transform .16s ease, border-color .16s ease, background .16s ease; }
@@ -405,8 +406,21 @@ enum HTMLRenderer {
                     }
 
                     links.forEach(function (link) {
-                        link.addEventListener("click", function () {
-                            setActive(link.dataset.categoryLink);
+                        link.addEventListener("click", function (event) {
+                            event.preventDefault();
+
+                            var sectionId = link.dataset.categoryLink;
+                            var targetSection = sectionId ? document.getElementById(sectionId) : null;
+                            if (targetSection) {
+                                targetSection.scrollIntoView({ behavior: "smooth", block: "start" });
+                                if (window.history && window.history.replaceState) {
+                                    window.history.replaceState(null, "", "#" + sectionId);
+                                } else {
+                                    window.location.hash = sectionId;
+                                }
+                            }
+
+                            setActive(sectionId);
                         });
                     });
 
