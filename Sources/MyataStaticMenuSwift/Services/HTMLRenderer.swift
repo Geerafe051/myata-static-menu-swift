@@ -390,8 +390,24 @@ enum HTMLRenderer {
                         });
                     }
 
+                    function currentScrollTop() {
+                        return window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+                    }
+
+                    function scrollToSection(section) {
+                        if (!section) {
+                            return;
+                        }
+
+                        var targetTop = section.getBoundingClientRect().top + currentScrollTop() - 110;
+                        window.scrollTo({
+                            top: Math.max(targetTop, 0),
+                            behavior: "smooth"
+                        });
+                    }
+
                     function updateActiveFromScroll() {
-                        var anchor = window.scrollY + 130;
+                        var anchor = currentScrollTop() + 130;
                         var current = sections[0];
 
                         sections.forEach(function (section) {
@@ -412,7 +428,7 @@ enum HTMLRenderer {
                             var sectionId = link.dataset.categoryLink;
                             var targetSection = sectionId ? document.getElementById(sectionId) : null;
                             if (targetSection) {
-                                targetSection.scrollIntoView({ behavior: "smooth", block: "start" });
+                                scrollToSection(targetSection);
                                 if (window.history && window.history.replaceState) {
                                     window.history.replaceState(null, "", "#" + sectionId);
                                 } else {
