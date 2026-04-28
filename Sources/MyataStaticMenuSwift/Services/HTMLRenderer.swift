@@ -60,12 +60,11 @@ enum HTMLRenderer {
             \(favicon)
             <style>
                 :root { color-scheme: dark; --bg:#0a0b0d; --panel:#14181d; --border:#2b3139; --text:#f4f1ea; --muted:#9aa6b2; --accent:#d8a65c; --active-green:#123f2b; --active-green-border:#2a7a52; }
-                * { box-sizing:border-box; } html { scroll-behavior:smooth; height:100%; }
-                body { margin:0; min-height:100%; overflow:hidden; font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",sans-serif; background:linear-gradient(180deg,#090b0e,#10151b 50%,#090b0e); color:var(--text); }
+                * { box-sizing:border-box; } html { scroll-behavior:smooth; }
+                body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",sans-serif; background:linear-gradient(180deg,#090b0e,#10151b 50%,#090b0e); color:var(--text); }
                 .page-background { position:fixed; inset:0; z-index:-2; background:linear-gradient(180deg, rgba(8,8,10,.72), rgba(10,10,12,.84)), url("./menu-background.png") center center / cover no-repeat; pointer-events:none; transform:translateZ(0); }
-                .app-scroll { position:relative; height:100vh; overflow-y:auto; overflow-x:hidden; -webkit-overflow-scrolling:touch; overscroll-behavior:contain; }
-                body.age-gate-locked .app-scroll,
-                body.item-modal-open .app-scroll { overflow:hidden; }
+                body.age-gate-locked { overflow:hidden; }
+                body.item-modal-open { overflow:hidden; }
                 .site-shell { transition:filter .18s ease, transform .18s ease; }
                 body.age-gate-locked .site-shell { filter:blur(16px); transform:scale(1.01); pointer-events:none; user-select:none; }
                 body.item-modal-open .site-shell { filter:blur(10px); pointer-events:none; user-select:none; }
@@ -128,7 +127,6 @@ enum HTMLRenderer {
                 .age-gate-button-primary { background:var(--accent); border-color:rgba(216,166,92,.8); color:#111114; }
                 .age-gate-button-primary:hover { border-color:rgba(255,255,255,.5); }
                 @media (max-width: 860px) {
-                    .app-scroll { height:100dvh; }
                     .grid { grid-template-columns:repeat(2, minmax(0, 1fr)); gap:12px; }
                     .card-top { flex-direction:column; gap:4px; }
                     .card-top h3, .card-top strong { font-size:16px; }
@@ -154,23 +152,21 @@ enum HTMLRenderer {
         </head>
         <body class="age-gate-locked">
             <div class="page-background" aria-hidden="true"></div>
-            <div class="app-scroll" id="app-scroll">
-                <div class="site-shell">
-                    <header class="hero">
-                        <div class="shell hero-panel">
-                            \(logo)
-                            <div>
-                                \(subtitle)
-                                <h1>\(escape(menuData.settings.venueName))</h1>
-                                <div class="meta">\(address)\(phone)\(instagram)</div>
-                            </div>
+            <div class="site-shell">
+                <header class="hero">
+                    <div class="shell hero-panel">
+                        \(logo)
+                        <div>
+                            \(subtitle)
+                            <h1>\(escape(menuData.settings.venueName))</h1>
+                            <div class="meta">\(address)\(phone)\(instagram)</div>
                         </div>
-                    </header>
-                    <div class="rail">
-                        <div class="shell rail-inner">\(navigation)</div>
                     </div>
-                    <main class="shell main">\(sections)</main>
+                </header>
+                <div class="rail">
+                    <div class="shell rail-inner">\(navigation)</div>
                 </div>
+                <main class="shell main">\(sections)</main>
             </div>
             <div class="item-modal" id="item-modal" hidden>
                 <article class="item-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="item-modal-title">
@@ -373,7 +369,6 @@ enum HTMLRenderer {
                 })();
 
                 (function () {
-                    var scrollRoot = document.getElementById("app-scroll");
                     var links = Array.prototype.slice.call(document.querySelectorAll("[data-category-link]"));
                     var sections = links
                         .map(function (link) {
@@ -381,7 +376,7 @@ enum HTMLRenderer {
                         })
                         .filter(Boolean);
 
-                    if (!scrollRoot || !links.length || !sections.length) {
+                    if (!links.length || !sections.length) {
                         return;
                     }
 
@@ -396,7 +391,7 @@ enum HTMLRenderer {
                     }
 
                     function currentScrollTop() {
-                        return scrollRoot.scrollTop || 0;
+                        return window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
                     }
 
                     function scrollToSection(section) {
@@ -404,9 +399,8 @@ enum HTMLRenderer {
                             return;
                         }
 
-                        var rootTop = scrollRoot.getBoundingClientRect().top;
-                        var targetTop = section.getBoundingClientRect().top - rootTop + currentScrollTop() - 110;
-                        scrollRoot.scrollTo({
+                        var targetTop = section.getBoundingClientRect().top + currentScrollTop() - 110;
+                        window.scrollTo({
                             top: Math.max(targetTop, 0),
                             behavior: "smooth"
                         });
@@ -447,7 +441,7 @@ enum HTMLRenderer {
                     });
 
                     var ticking = false;
-                    scrollRoot.addEventListener("scroll", function () {
+                    window.addEventListener("scroll", function () {
                         if (ticking) {
                             return;
                         }
